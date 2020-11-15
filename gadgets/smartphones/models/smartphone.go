@@ -1,4 +1,4 @@
-package smartphones
+package models
 
 // Smartphone model structure for smartphone
 type Smartphone struct {
