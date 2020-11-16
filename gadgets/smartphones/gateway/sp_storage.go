@@ -7,28 +7,23 @@ import (
 )
 
 type SmartphoneStorageGateway interface {
-	Add(cmd *models.CreateSmartphoneCMD) (*models.Smartphone, error)
-
-	// Delete, Find, Update ...
+	create(cmd *models.CreateSmartphoneCMD) (*models.Smartphone, error)
 }
 
 type SmartphoneStorage struct {
 	*database.MySQLClient
 }
 
-func (this *SmartphoneStorage) Add(cmd *models.CreateSmartphoneCMD) (*models.Smartphone, error) {
-	tx, err := this.MySQLClient.Begin()
+func (s *SmartphoneStorage) create(cmd *models.CreateSmartphoneCMD) (*models.Smartphone, error) {
+	tx, err := s.MySQLClient.Begin()
 
 	if err != nil {
 		logs.Log().Error("cannot create transaction")
 		return nil, err
 	}
 
-	res, err := tx.Exec("insert into smartphone (name, price, country_origin, os) values (?, ?, ?, ?)",
-		cmd.Name, cmd.Price, cmd.CountryOrigin, cmd.Os,
-	)
-
-	// Las transacciones se deben cerrar con Rollback o Commit
+	res, err := tx.Exec(`insert into smartphone (name, price, country_origin, os) 
+	values (?, ?, ?, ?)`, cmd.Name, cmd.Price, cmd.CountryOrigin, cmd.OS)
 
 	if err != nil {
 		logs.Log().Error("cannot execute statement")
@@ -39,7 +34,7 @@ func (this *SmartphoneStorage) Add(cmd *models.CreateSmartphoneCMD) (*models.Sma
 	id, err := res.LastInsertId()
 
 	if err != nil {
-		logs.Log().Error("cannot fech last id")
+		logs.Log().Error("cannot fetch last id")
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -51,6 +46,6 @@ func (this *SmartphoneStorage) Add(cmd *models.CreateSmartphoneCMD) (*models.Sma
 		Name:          cmd.Name,
 		Price:         cmd.Price,
 		CountryOrigin: cmd.CountryOrigin,
-		Os:            cmd.Os,
+		OS:            cmd.OS,
 	}, nil
 }

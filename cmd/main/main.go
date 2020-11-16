@@ -1,6 +1,7 @@
 package main
 
 import (
+	"phones-review/gadgets/smartphones/web"
 	"phones-review/internal/database"
 	"phones-review/internal/logs"
 
@@ -20,6 +21,11 @@ func main() {
 	client := database.NewSQLClient("root:burbujas27@tcp(localhost:3306)/phones_review")
 	doMigrate(client, "phones_review")
 
+	handler := web.NewCreateSmartphoneHandler(client)
+	mux := Routes(handler)
+	server := NewServer(mux)
+
+	server.Run()
 }
 
 func doMigrate(client *database.MySQLClient, dbName string) {
